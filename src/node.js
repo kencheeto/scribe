@@ -152,6 +152,25 @@ define([
     });
   }
 
+  /**
+   * IE does not have CustomEvent constructor to directly create custom events.
+   * This is why we use the deprecated `document.createEvent` method for IE.
+   */
+
+  var createCustomEvent;
+
+  if (typeof window.CustomEvent !== 'function') {
+    createCustomEvent = function(eventType, options) {
+      var event = document.createEvent('CustomEvent');
+      event.initEvent(eventType, !!options.bubbles, !!options.cancelable, options.detail || null);
+      return event;
+    };
+  } else {
+    createCustomEvent = function(eventType, options) {
+      return new CustomEvent(eventType, options);
+    };
+  }
+
   return {
     isInlineElement: isInlineElement,
     isBlockElement: isBlockElement,
@@ -170,7 +189,8 @@ define([
     wrap: wrap,
     unwrap: unwrap,
     removeChromeArtifacts: removeChromeArtifacts,
-    elementHasClass: elementHasClass
+    elementHasClass: elementHasClass,
+    createCustomEvent: createCustomEvent
   };
 
 });

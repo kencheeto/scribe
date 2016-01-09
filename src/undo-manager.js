@@ -1,12 +1,13 @@
 define([
-  'immutable'
-], function (Immutable) {
+  'immutable',
+  './node'
+], function (Immutable, nodeHelpers) {
   'use strict';
 
   function UndoManager(limit, undoScopeHost) {
     this._stack = Immutable.List();
     this._limit = limit;
-    this._fireEvent = typeof CustomEvent != 'undefined' && undoScopeHost && undoScopeHost.dispatchEvent;
+    this._fireEvent = undoScopeHost && undoScopeHost.dispatchEvent;
     this._ush = undoScopeHost;
 
     this.position = 0;
@@ -86,13 +87,13 @@ define([
 
   UndoManager.prototype._dispatch = function(event, transactions) {
     if (this._fireEvent) {
-      this._ush.dispatchEvent(new CustomEvent(event, {
+      this._ush.dispatchEvent(nodeHelpers.createCustomEvent(event, {
         detail: {transactions: transactions.toArray()},
         bubbles: true,
         cancelable: false
       }));
     }
-  }
+  };
 
   return UndoManager;
 });
