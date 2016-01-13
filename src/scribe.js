@@ -45,8 +45,9 @@ define([
     var origExecCommand = document.execCommand;
 
     document.execCommand = function() {
-      origExecCommand.apply(document, arguments);
+      var result = origExecCommand.apply(document, arguments);
       this.transactionManager.run();
+      return result;
     }.bind(this);
 
     var transactionRun = function() {
