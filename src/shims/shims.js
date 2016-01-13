@@ -1,11 +1,10 @@
-define(['./dom_shims', './weak_map', './mutation_observer'],
+define(['./dom_shims', './weak_map', './mutation_observer'], function (domShims, WeakMap, MutationObserver) {
+
   'use strict';
 
-  function (domShims, WeakMap, MutationObserver) {
-    return function() {
-      domShims();
-      WeakMap();
-      MutationObserver();
-    };
-  }
-);
+  return function() {
+    domShims();
+    WeakMap();
+    MutationObserver();
+  };
+});
