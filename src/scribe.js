@@ -49,14 +49,14 @@ define([
       this.transactionManager.run();
     }.bind(this);
 
-    var transctionRun = function() {
+    var transactionRun = function() {
       this.transactionManager.run();
-    .bind(this);
+    }.bind(this);
 
     // TODO: take into account the composable events for langs like Japanese.
-    this.el.addEventListener('keydown', transctionRun, false);
-    this.el.addEventListener('paste',   transctionRun, false);
-    this.el.addEventListener('cut',     transctionRun, false);
+    this.el.addEventListener('keydown', transactionRun, false);
+    this.el.addEventListener('paste',   transactionRun, false);
+    this.el.addEventListener('cut',     transactionRun, false);
   }
 
   function Scribe(el, options) {
