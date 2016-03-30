@@ -34,30 +34,33 @@ define([
     /**
      * This section replaces a simple observation of the input event.
      * With Edge, Chrome, FF, this event triggers when either the user types
-     * something or a native command is executed which causes the content
-     * to change (i.e. `document.execCommand('bold')`).
-     * We can't wrap a transaction around these actions, so instead we run
-     * the transaction in this event.
+     * something.
      * With IE, the input event does not trigger on contenteditable element
      * that is why we have to simulate it.
      */
 
-    var origExecCommand = document.execCommand;
+    var isComposing = false;
+    var self = this;
 
-    document.execCommand = function() {
-      var result = origExecCommand.apply(document, arguments);
-      this.transactionManager.run();
-      return result;
-    }.bind(this);
+    var handler = {
+      handleEvent: function(e) {
+        if (isComposing) return;
 
-    var transactionRun = function() {
-      this.transactionManager.run();
-    }.bind(this);
+        if (e.type === 'compositionstart') {
+           isComposing = true;
+           return;
+        } else if (e.type === 'compositionend') {
+           isComposing = false;
+           self.transactionManager.run();
+        } else {
+           self.transactionManager.run();
+        }
+      }
+    };
 
-    // TODO: take into account the composable events for langs like Japanese.
-    this.el.addEventListener('keydown', transactionRun, false);
-    this.el.addEventListener('paste',   transactionRun, false);
-    this.el.addEventListener('cut',     transactionRun, false);
+    ['compositionstart', 'compositionend', 'keydown', 'cut', 'paste'].forEach(function(e) {
+      this.el.addEventListener(e, handler, false);
+    });
   }
 
   function Scribe(el, options) {
