@@ -11,7 +11,7 @@ define([
   './node',
   'immutable',
   './config',
-  './shims/shims'
+  './shims/dom_shims'
 ], function (
   plugins,
   commands,
@@ -25,7 +25,7 @@ define([
   nodeHelpers,
   Immutable,
   config,
-  shims
+  domShims
 ) {
 
   'use strict';
@@ -61,7 +61,7 @@ define([
   }
 
   function Scribe(el, options) {
-    shims();
+    domShims();
 
     EventEmitter.call(this);
 
