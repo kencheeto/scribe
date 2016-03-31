@@ -42,25 +42,32 @@ define([
     var isComposing = false;
     var self = this;
 
-    var handler = {
-      handleEvent: function(e) {
-        if (isComposing) return;
+    // For IE11
+    if (/Trident/.test(navigator.userAgent)) {
+      var handler = {
+        handleEvent: function(e) {
+          if (isComposing) return;
 
-        if (e.type === 'compositionstart') {
-           isComposing = true;
-           return;
-        } else if (e.type === 'compositionend') {
-           isComposing = false;
-           self.transactionManager.run();
-        } else {
-           self.transactionManager.run();
+          if (e.type === 'compositionstart') {
+            isComposing = true;
+            return;
+          } else if (e.type === 'compositionend') {
+            isComposing = false;
+            self.transactionManager.run();
+          } else {
+            self.transactionManager.run();
+          }
         }
-      }
-    };
+      };
 
-    ['compositionstart', 'compositionend', 'keydown', 'cut', 'paste'].forEach(function(e) {
-      this.el.addEventListener(e, handler, false);
-    }, this);
+      ['compositionstart', 'compositionend', 'keydown', 'cut', 'paste'].forEach(function(e) {
+        this.el.addEventListener(e, handler, false);
+      }, this);
+    } else {
+      this.el.addEventListener('input', function() {
+        self.transactionManager.run();
+      }, false);
+    }
   }
 
   function Scribe(el, options) {
