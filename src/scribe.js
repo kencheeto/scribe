@@ -60,7 +60,7 @@ define([
 
     ['compositionstart', 'compositionend', 'keydown', 'cut', 'paste'].forEach(function(e) {
       this.el.addEventListener(e, handler, false);
-    });
+    }, this);
   }
 
   function Scribe(el, options) {
