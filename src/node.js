@@ -101,7 +101,6 @@ define([
   }
 
   function wrap(nodes, parentNode) {
-    nodes[0].parentNode.insertBefore(parentNode, nodes[0]);
     nodes.forEach(function (node) {
       parentNode.appendChild(node);
     });
