@@ -46,7 +46,7 @@ define([
       /**
        * Apply the formatters when there is a DOM mutation.
        */
-      var applyFormatters = function() {
+      scribe._applyFormatters = function() {
         if (!scribe._skipFormatters) {
           var selection = new scribe.api.Selection();
           var isEditorActive = selection.range;
@@ -55,7 +55,7 @@ define([
             if (isEditorActive) {
               selection.placeMarkers();
             }
-            scribe.setHTML(scribe._htmlFormatterFactory.format(scribe.getHTML()));
+            scribe.setRawHTML(scribe._htmlFormatterFactory.format(scribe.getHTML()));
             selection.selectMarkers();
           };
 
@@ -81,11 +81,14 @@ define([
       if (/Trident/.test(navigator.userAgent)) {
         scribe.el.addEventListener('keydown', function(e) {
           if (e.which === 13) { // key "Enter"
-            applyFormatters();
+            scribe._applyFormatters();
           }
         }, false);
+        scribe.on('paste', function(e) {
+          scribe._applyFormatters();
+        }, false);
       } else {
-        observeDomChanges(scribe.el, applyFormatters);
+        observeDomChanges(scribe.el, scribe._applyFormatters);
       }
 
       // TODO: disconnect on tear down:
