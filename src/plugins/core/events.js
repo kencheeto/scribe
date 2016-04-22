@@ -41,7 +41,7 @@ define([
             selection.selection.addRange(range);
           }
         }
-      }.bind(scribe));
+      });
 
       /**
        * Apply the formatters when there is a DOM mutation.
@@ -57,7 +57,7 @@ define([
             }
             scribe.setHTML(scribe._htmlFormatterFactory.format(scribe.getHTML()));
             selection.selectMarkers();
-          }.bind(scribe);
+          };
 
           // We only want to wrap the formatting in a transaction if the editor is
           // active. If the DOM is mutated when the editor isn't active (e.g.
@@ -74,9 +74,19 @@ define([
         }
 
         delete scribe._skipFormatters;
-      }.bind(scribe);
+      };
 
-      observeDomChanges(scribe.el, applyFormatters);
+      // For IE we rely on hitting Enter to run the formatters as the mutation observer
+      // causes trouble when integrating into an Ember app.
+      if (/Trident/.test(navigator.userAgent)) {
+        scribe.el.addEventListener('keydown', function(e) {
+          if (e.which === 13) { // key "Enter"
+            applyFormatters();
+          }
+        }, false);
+      } else {
+        observeDomChanges(scribe.el, applyFormatters);
+      }
 
       // TODO: disconnect on tear down:
       // observer.disconnect();
