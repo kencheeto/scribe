@@ -169,8 +169,13 @@ define([
   };
 
   Scribe.prototype.setHTML = function (html, skipFormatters) {
+    if (skipFormatters) {
+      this._skipFormatters = true;
+    }
+
     this.setRawHTML(html);
-    if (!skipFormatters) {
+
+    if (/Trident/.test(navigator.userAgent) && !skipFormatters) {
       this._applyFormatters && this._applyFormatters(html);
     }
   };

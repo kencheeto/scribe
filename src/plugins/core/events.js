@@ -79,6 +79,8 @@ define([
       // For IE we rely on hitting Enter to run the formatters as the mutation observer
       // causes trouble when integrating into an Ember app.
       if (/Trident/.test(navigator.userAgent)) {
+        // do initial formatting
+        scribe._applyFormatters();
         scribe.el.addEventListener('keydown', function(e) {
           if (e.which === 13) { // key "Enter"
             scribe._applyFormatters();
