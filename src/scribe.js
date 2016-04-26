@@ -169,11 +169,20 @@ define([
   };
 
   Scribe.prototype.setHTML = function (html, skipFormatters) {
-    this._lastItem.content = html;
-
     if (skipFormatters) {
       this._skipFormatters = true;
     }
+
+    this.setRawHTML(html);
+
+    if (/Trident/.test(navigator.userAgent) && !skipFormatters) {
+      this._applyFormatters && this._applyFormatters(html);
+    }
+  };
+
+  Scribe.prototype.setRawHTML = function (html) {
+    this._lastItem.content = html;
+
     // IE11: Setting HTML to the value it already has causes breakages elsewhere (see #336)
     if (this.el.innerHTML !== html) {
       this.el.innerHTML = html;
