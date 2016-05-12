@@ -66,6 +66,22 @@ define([
         var bin = document.createElement('div');
         bin.innerHTML = html;
 
+        /**
+         * Remove empty <p></p> elements.
+         *
+         * Some DOM transformations on the editor DOM produce empty <p></p> elements
+         * as a result of the internal browser normalization happening e.g. after
+         * inserting a P element inside of another P element. These elements need to
+         * be removed as they do not produce visible layout. Because of the
+         * ensure-selectable-containers normalization though they suddenly get a <br>
+         * element inside which triggers layout and rendering resulting in empty lines
+         * which is something undesired.
+         */
+
+        [].forEach.call(bin.querySelectorAll('p:empty'), function(p) {
+          p.parentNode.removeChild(p);
+        });
+
         wrapChildNodes(bin);
         traverse(bin);
 
