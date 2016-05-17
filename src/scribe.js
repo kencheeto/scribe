@@ -6,7 +6,6 @@ define([
   './plugins/core/patches',
   './api',
   './transaction-manager',
-  './undo-selection',
   './undo-manager',
   './event-emitter',
   './node',
@@ -21,7 +20,6 @@ define([
   patches,
   Api,
   buildTransactionManager,
-  UndoSelection,
   UndoManager,
   EventEmitter,
   nodeHelpers,
@@ -46,6 +44,8 @@ function configureZeroState(scribe) {
     sel.addRange(range);
   }
 }
+
+var OBSERVED_EVENTS = ['compositionstart', 'compositionend', 'keydown', 'cut'];
 
 function listenForUserInput() {
     /**
@@ -81,7 +81,7 @@ function listenForUserInput() {
 						  if (e.which === 32 || e.which === 13) {
                 // prevent unnecessary history entries when pressing space in rappid succession
                 if (shouldTransact) {
-								  scribe.transactionManager.run();
+                  scribe.transactionManager.run();
                   shouldTransact = false;
                 }
                 clearTimeout(timer);
@@ -97,7 +97,7 @@ function listenForUserInput() {
         }
       };
 
-      ['compositionstart', 'compositionend', 'keydown', 'cut'].forEach(function(e) {
+      OBSERVED_EVENTS.forEach(function(e) {
         scribe.el.addEventListener(e, handler, false);
       });
 
@@ -109,12 +109,13 @@ function listenForUserInput() {
 
       scribe.on('destroy', function() {
         scribe.off('paste', onPaste);
-        ['compositionstart', 'compositionend', 'keydown', 'cut'].forEach(function(e) {
+        OBSERVED_EVENTS.forEach(function(e) {
           scribe.el.removeEventListener(e, handler, false);
         });
       });
 
     } else {
+      //For all other browsers other than IE
       scribe.el.addEventListener('input', function() {
         configureZeroState(scribe);
         scribe.transactionManager.run();
@@ -142,7 +143,6 @@ function listenForUserInput() {
 
     var TransactionManager = buildTransactionManager(this);
     this.transactionManager = new TransactionManager();
-    this.undoSelection = new UndoSelection(this);
 
     //added for explicit checking later eg if (scribe.undoManager) { ... }
     this.undoManager = false;
@@ -157,6 +157,25 @@ function listenForUserInput() {
       this._forceMerge = false;
       this._mergeTimer = 0;
       this._lastItem = {content: ''};
+
+      if (this.options.undo.undoSelection) {
+        this.undoSelection = this.options.undo.undoSelection;
+      } else {
+        var Selection = this.api.Selection;
+        this.undoSelection = {
+          get selection() {return new Selection();},
+
+          placeMarkers: function() {
+            this.selection.placeMarkers();
+          },
+          removeMarkers: function() {
+            this.selection.removeMarkers();
+          }
+          selectMarkers: function() {
+            this.selection.selectMarkers();
+          }
+        };
+      }
     }
 
     this.setHTML(this.getHTML());
@@ -318,7 +337,7 @@ function listenForUserInput() {
     this.setHTML(historyItem.content, true);
 
     // Restore the selection
-    this.selectionManager.selectMarkers();
+    this.undoSelection.selectMarkers();
     // Because we skip the formatters, a transaction is not run, so we have to
     // emit this event ourselves.
     this.trigger('content-changed');
