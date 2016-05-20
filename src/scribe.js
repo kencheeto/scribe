@@ -28,9 +28,26 @@ define([
   domShims
 ) {
 
-  'use strict';
+'use strict';
 
-  function listenForUserInput() {
+var isIE = /Trident/.test(navigator.userAgent);
+
+function configureZeroState(scribe) {
+  // make sure there is always at least this content in thed editor <p><br></p>
+  if (!scribe.el.firstElementChild) {
+    scribe.el.innerHTML = '<p><br></p>';
+    var sel = window.getSelection();
+    var range = document.createRange();
+    range.selectNode(scribe.el.querySelector('br'));
+    range.collapse(true);
+    sel.removeAllRanges();
+    sel.addRange(range);
+  }
+}
+
+var OBSERVED_EVENTS = ['compositionstart', 'compositionend', 'keydown', 'cut'];
+
+function listenForUserInput() {
     /**
      * This section replaces a simple observation of the input event.
      * With Edge, Chrome, FF, this event triggers when either the user types
@@ -40,32 +57,68 @@ define([
      */
 
     var isComposing = false;
-    var self = this;
+    var scribe = this;
+    var shouldTransact = true;
+    var timer = 0;
+    var throttleInterval = scribe.options.undo.interval || 250;
 
     // For IE11
-    if (/Trident/.test(navigator.userAgent)) {
+    if (isIE) {
       var handler = {
         handleEvent: function(e) {
+          configureZeroState(scribe);
+
           if (isComposing) return;
 
-          if (e.type === 'compositionstart') {
-            isComposing = true;
-            return;
-          } else if (e.type === 'compositionend') {
-            isComposing = false;
-            self.transactionManager.run();
-          } else {
-            self.transactionManager.run();
-          }
+          switch (e.type) {
+						case 'compositionstart':
+						  isComposing = true;
+							break;
+						case 'compositionend':
+						  isComposing = false;
+							break;
+						case 'keydown':
+						  if (e.which === 32 || e.which === 13) {
+                // prevent unnecessary history entries when pressing space in rappid succession
+                if (shouldTransact) {
+                  scribe.transactionManager.run();
+                  shouldTransact = false;
+                }
+                clearTimeout(timer);
+                timer = setTimeout(function() {
+                  shouldTransact = true;
+                }, throttleInterval);
+							}
+							break;
+						case 'cut':
+						  scribe.transactionManager.run();
+							break;
+					}
         }
       };
 
-      ['compositionstart', 'compositionend', 'keydown', 'cut', 'paste'].forEach(function(e) {
-        this.el.addEventListener(e, handler, false);
-      }, this);
+      OBSERVED_EVENTS.forEach(function(e) {
+        scribe.el.addEventListener(e, handler, false);
+      });
+
+      var onPaste = function() {
+        scribe.transactionManager.run();
+      };
+
+			scribe.on('paste', onPaste);
+
+      scribe.on('destroy', function() {
+        scribe.off('paste', onPaste);
+        OBSERVED_EVENTS.forEach(function(e) {
+          scribe.el.removeEventListener(e, handler, false);
+        });
+      });
+
     } else {
-      this.el.addEventListener('input', function() {
-        self.transactionManager.run();
+      //For all other browsers other than IE
+      scribe.el.addEventListener('input', function() {
+        configureZeroState(scribe);
+        scribe.transactionManager.run();
       }, false);
     }
   }
@@ -104,6 +157,25 @@ define([
       this._forceMerge = false;
       this._mergeTimer = 0;
       this._lastItem = {content: ''};
+
+      if (this.options.undo.undoSelection) {
+        this.undoSelection = this.options.undo.undoSelection;
+      } else {
+        var Selection = this.api.Selection;
+        this.undoSelection = {
+          get selection() {return new Selection();},
+
+          placeMarkers: function() {
+            this.selection.placeMarkers();
+          },
+          removeMarkers: function() {
+            this.selection.removeMarkers();
+          }
+          selectMarkers: function() {
+            this.selection.selectMarkers();
+          }
+        };
+      }
     }
 
     this.setHTML(this.getHTML());
@@ -175,14 +247,12 @@ define([
 
     this.setRawHTML(html);
 
-    if (/Trident/.test(navigator.userAgent) && !skipFormatters) {
+    if (isIE && !skipFormatters) {
       this._applyFormatters && this._applyFormatters(html);
     }
   };
 
   Scribe.prototype.setRawHTML = function (html) {
-    this._lastItem.content = html;
-
     // IE11: Setting HTML to the value it already has causes breakages elsewhere (see #336)
     if (this.el.innerHTML !== html) {
       this.el.innerHTML = html;
@@ -216,11 +286,9 @@ define([
 
       // We only want to push the history if the content actually changed.
       if (scribe.getHTML() !== lastContentNoMarkers) {
-        var selection = new scribe.api.Selection();
-
-        selection.placeMarkers();
+        this.undoSelection.placeMarkers();
         var content = scribe.getHTML();
-        selection.removeMarkers();
+        this.undoSelection.removeMarkers();
 
         // Checking if there is a need to merge, and that the previous history item
         // is the last history item of the same scribe instance.
@@ -248,7 +316,9 @@ define([
         // Merge next transaction if it happens before the interval option, otherwise don't merge.
         clearTimeout(scribe._mergeTimer);
         scribe._merge = true;
-        scribe._mergeTimer = setTimeout(function() { scribe._merge = false; }, scribe.options.undo.interval);
+        scribe._mergeTimer = setTimeout(function() {
+          scribe._merge = false;
+        }, scribe.options.undo.interval);
 
         return true;
       }
@@ -267,9 +337,7 @@ define([
     this.setHTML(historyItem.content, true);
 
     // Restore the selection
-    var selection = new this.api.Selection();
-    selection.selectMarkers();
-
+    this.undoSelection.selectMarkers();
     // Because we skip the formatters, a transaction is not run, so we have to
     // emit this event ourselves.
     this.trigger('content-changed');
