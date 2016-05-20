@@ -163,14 +163,15 @@ function listenForUserInput() {
       } else {
         var Selection = this.api.Selection;
         this.undoSelection = {
-          get selection() {return new Selection();},
-
+          get selection() {
+            return new Selection();
+          },
           placeMarkers: function() {
             this.selection.placeMarkers();
           },
           removeMarkers: function() {
             this.selection.removeMarkers();
-          }
+          },
           selectMarkers: function() {
             this.selection.selectMarkers();
           }
