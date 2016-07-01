@@ -88,7 +88,13 @@ function listenForUserInput() {
                 timer = setTimeout(function() {
                   shouldTransact = true;
                 }, throttleInterval);
-							}
+              } else {
+                if (!isComposing) {
+                  setTimeout(function() {
+                    scribe.trigger('content-changed');
+                  }, 10);
+                }
+              }
 							break;
 						case 'cut':
 						  scribe.transactionManager.run();
