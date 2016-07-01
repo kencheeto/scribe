@@ -88,7 +88,9 @@ function listenForUserInput() {
                   scribe.transactionManager.run();
                   shouldTransact = false;
                 } else {
-                  scribe.trigger('content-changed');
+                  setTimeout(function() {
+                    scribe.trigger('content-changed');
+                  }, 10);
                 }
                 clearTimeout(timer);
                 timer = setTimeout(function() {
