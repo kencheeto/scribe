@@ -87,6 +87,8 @@ function listenForUserInput() {
                 if (shouldTransact) {
                   scribe.transactionManager.run();
                   shouldTransact = false;
+                } else {
+                  scribe.trigger('content-changed');
                 }
                 clearTimeout(timer);
                 timer = setTimeout(function() {
