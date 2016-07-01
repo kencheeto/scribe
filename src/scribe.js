@@ -33,9 +33,13 @@ define([
 var isIE = /Trident/.test(navigator.userAgent);
 
 function configureZeroState(scribe) {
-  // make sure there is always at least this content in thed editor <p><br></p>
+  // make sure there is always at least one paragraph
   if (!scribe.el.firstElementChild) {
-    scribe.el.innerHTML = '<p><br></p>';
+    if (scribe.el.firstChild && scribe.el.firstChild.nodeType === Node.TEXT_NODE) {
+      scribe.el.innerHTML = '<p>' + scribe.el.firstChild.textContent + '</p>';
+    } else {
+      scribe.el.innerHTML = '<p><br></p>';
+    }
     var sel = window.getSelection();
     var range = document.createRange();
     range.selectNode(scribe.el.querySelector('br'));
@@ -71,14 +75,14 @@ function listenForUserInput() {
           if (isComposing) return;
 
           switch (e.type) {
-						case 'compositionstart':
-						  isComposing = true;
-							break;
-						case 'compositionend':
-						  isComposing = false;
-							break;
-						case 'keydown':
-						  if (e.which === 32 || e.which === 13) {
+            case 'compositionstart':
+              isComposing = true;
+              break;
+            case 'compositionend':
+              isComposing = false;
+              break;
+            case 'keydown':
+              if (e.which === 32 || e.which === 13) {
                 // prevent unnecessary history entries when pressing space in rappid succession
                 if (shouldTransact) {
                   scribe.transactionManager.run();
@@ -95,11 +99,11 @@ function listenForUserInput() {
                   }, 10);
                 }
               }
-							break;
-						case 'cut':
-						  scribe.transactionManager.run();
-							break;
-					}
+              break;
+            case 'cut':
+              scribe.transactionManager.run();
+              break;
+          }
         }
       };
 
@@ -111,7 +115,7 @@ function listenForUserInput() {
         scribe.transactionManager.run();
       };
 
-			scribe.on('paste', onPaste);
+      scribe.on('paste', onPaste);
 
       scribe.on('destroy', function() {
         scribe.off('paste', onPaste);
@@ -123,7 +127,6 @@ function listenForUserInput() {
     } else {
       //For all other browsers other than IE
       scribe.el.addEventListener('input', function() {
-        configureZeroState(scribe);
         scribe.transactionManager.run();
       }, false);
     }
