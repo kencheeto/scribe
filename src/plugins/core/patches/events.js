@@ -11,8 +11,9 @@ define([], function () {
       // TODO: share somehow with `InsertList` command
 
       var nodeHelpers = scribe.node;
+      var isIE = /Trident/.test(window.navigator.userAgent);
 
-      if (scribe.allowsBlockElements()) {
+      if (isIE && scribe.allowsBlockElements()) {
         scribe.el.addEventListener('keyup', function (event) {
           if (event.keyCode === 8 || event.keyCode === 46) { // backspace or delete
 

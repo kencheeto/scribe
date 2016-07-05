@@ -83,7 +83,9 @@ define([
         scribe._applyFormatters();
         scribe.el.addEventListener('keydown', function(e) {
           if (e.which === 13) { // key "Enter"
-            scribe._applyFormatters();
+            setTimeout(function() {
+              scribe._applyFormatters();
+            }, 10);
           }
         }, false);
         scribe.on('paste', function(e) {
