@@ -36,13 +36,13 @@ function configureZeroState(scribe) {
   // make sure there is always at least one paragraph
   if (!scribe.el.firstElementChild) {
     if (scribe.el.firstChild && scribe.el.firstChild.nodeType === Node.TEXT_NODE) {
-      scribe.el.innerHTML = '<p>' + scribe.el.firstChild.textContent + '</p>';
+      scribe.el.innerHTML = '<p>' + scribe.el.firstChild.textContent + '<br></p>';
     } else {
       scribe.el.innerHTML = '<p><br></p>';
     }
     var sel = window.getSelection();
     var range = document.createRange();
-    range.selectNode(scribe.el.querySelector('br'));
+    range.selectNode(scribe.el.querySelector('p').firstChild);
     range.collapse(true);
     sel.removeAllRanges();
     sel.addRange(range);
