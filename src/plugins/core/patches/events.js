@@ -39,9 +39,7 @@ define([], function () {
 
               scribe.transactionManager.run(function () {
                 // Store the caret position
-                selection.placeMarkers();
                 nodeHelpers.removeChromeArtifacts(containerPElement);
-                selection.selectMarkers();
               }, true);
             }
           }
