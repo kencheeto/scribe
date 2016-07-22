@@ -78,8 +78,10 @@ define([
          * which is something undesired.
          */
 
-        [].forEach.call(bin.querySelectorAll('p:empty'), function(p) {
-          p.parentNode.removeChild(p);
+        [].forEach.call(bin.querySelectorAll('p'), function(p) {
+          if (!p.firstChild) {
+            p.parentNode.removeChild(p);  
+          }
         });
 
         wrapChildNodes(bin);
