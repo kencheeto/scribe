@@ -1,31 +1,24 @@
 language: node_js
-
 node_js:
-  - 0.10
-
+- 0.1
 sudo: false
-
 cache:
   directories:
-    - node_modules
-    - bower_components
-
+  - node_modules
+  - bower_components
 addons:
   sauce_connect: true
-
 env:
   matrix:
-    - BROWSER_NAME='firefox' BROWSER_VERSION='40' PLATFORM='Windows 7'
-    - BROWSER_NAME='firefox' BROWSER_VERSION='40' PLATFORM='OSX 10.9'
-    - BROWSER_NAME='chrome' BROWSER_VERSION='43' PLATFORM='Windows 7'
-    - BROWSER_NAME='chrome' BROWSER_VERSION='43' PLATFORM='OSX 10.9'
-    - BROWSER_NAME='chrome' BROWSER_VERSION='44' PLATFORM='Windows 7'
-    - BROWSER_NAME='chrome' BROWSER_VERSION='44' PLATFORM='OSX 10.9'
+  - BROWSER_NAME='firefox' BROWSER_VERSION='40' PLATFORM='Windows 7'
+  - BROWSER_NAME='firefox' BROWSER_VERSION='40' PLATFORM='OSX 10.9'
+  - BROWSER_NAME='chrome' BROWSER_VERSION='43' PLATFORM='Windows 7'
+  - BROWSER_NAME='chrome' BROWSER_VERSION='43' PLATFORM='OSX 10.9'
+  - BROWSER_NAME='chrome' BROWSER_VERSION='44' PLATFORM='Windows 7'
+  - BROWSER_NAME='chrome' BROWSER_VERSION='44' PLATFORM='OSX 10.9'
   global:
-    - secure: OaF1EHbUU+0vO3zdO70VlLVOuojRMnWhF02Lj3S7sP4+lbM3CY3JmEyB8G18G3x2aVyqgBEWLkh5WXahNuQIwnTYfidpbeJhvZD4xcP4zxgVyV6DLbxVN+lUpY2maOgCyDPGAix08HMWwuJss2Cw83bdmm0cJv/r2x6YXa/FpUA=
-    - secure: AdCl4LiKCMEOBAdltT/aAQVSmqnPZfCc/z2z7VPKCR/s1LbiD1i3ADJin5SgsglhWnmJToam5msNXEvL4gaT0dtlxtiw8ygutzQwEewPSLyekXuAF2NCt+63IdWWt6z470Cb6Nojrz0hRkiKzzeEjF2j1GFmrWkYzgYahlvi4sE=
-
+    secure: UPOuabmwhUXi2MU8Ps66/KCJdDkKhkalbKkg46yAV6ZPYSK9SbQ2Rd0ORN4cD5KwZJZvOY2zeA7JGREpEMuzZinsAbY+9trbyiVycUmFmYy+gH2dZg119scvGkyllxsxIuvSNwhbXCiJClPJppu75n5bh0qx9/zEMMi90cTXeuTdsrLwOKPyiC5sEpKunzm2TeDX16U42AisBgvZ1O8RJg4GIIHiWZ22nxFMBW5hbsWk7gND5UuBquTvdbIa8WfwQsvkdiCHi/7RA1tZnCYxBReKDX8c0Xit0dI7aZzFWo6RopCGPDHryEFaNuOTkNpUajthaSdXocrC0giR3zw0WYQJLk4nIkma8IkONmA+NfqrHVwTIbVoZcsjQ/7zXAJJdfUTBupOX11QzmrvGuWYm8pgYpvD+ADNycGe+OJnXOXpoXL8B9R3Q0lYZQ4q8m9mqd8fA5DJ1eD637zxqTuTxyuhxnYbqnMhmyzmTHHYHkliswWUJJh8TxEB76BZcc1PCuR7Ip+Z5eb2lZvM0DoL/z1n9l6BkKgXzhsIA5jTFPEO1K2inaq0Gt2WuP/5Z7tchg3xqRCCzySJ8ZYgXFj9T56hOkgNQYrMgMh0PT833Y1vglu6fB/ZBaxtXOGtB6BInAPISY4feX/smNwt3deR9S357LhYA7Fv76A5xCUcRso=
 before_script:
-  - npm install -g bower
-  - bower install
+- npm install -g bower
+- bower install
 script: TEST_SERVER_PORT=8090 npm test
